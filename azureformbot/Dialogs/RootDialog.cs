@@ -12,11 +12,11 @@ namespace azureformbot.Dialogs
         private string customerName;
         private string certifierName;
 
-        // Implements IDialog interface and it is called when the dialog becomes active
-        // IDIalogContect used to manage the conversation
+        // Implements IDialog interface and it is called when the root dialog becomes active
+        // IDIalogContext used to manage the conversation
         public Task StartAsync(IDialogContext context)
         {
-            // Wait till first message is received from the conversation and call MessageREceivedAsync to process it.
+            // Wait till first message is received from the conversation and call MessageReceivedAsync to process it.
             context.Wait(MessageReceivedAsync);
             // completes only after the bot process ends.
             return Task.CompletedTask;

@@ -30,13 +30,45 @@ namespace azureformbot.Dialogs
 
             // calculate something for us to return
             // int length = (activity.Text ?? string.Empty).Length;
-
             // return our reply to the user
             // await context.PostAsync($"You sent {activity.Text} which was {length} characters");
+
+            await this.SendWelcomeMessageAsync(context);
+            //context.Wait(MessageReceivedAsync);
+
+        }
+
+        private async Task SendWelcomeMessageAsync(IDialogContext context) {
             await context.PostAsync("Welcome to CSA Group. I will help you find certification information.");
+            context.Call(new CertifierDialog(), this.CertifierDialogResumeAfter);
+        }
 
-            context.Wait(MessageReceivedAsync);
+        private async Task CertifierDialogResumeAfter(IDialogContext context, IAwaitable<string> result) {
+            try
+            {
+                this.certifierName = await result;
+                context.Call(new CustomerDialog(this.certifierName), this.CustomerDialogResumeAfter);
+            }
+            catch (TooManyAttemptsException) {
+                await context.PostAsync("I'm sorry, I can't understand you. Let's try again. ");
+                await this.SendWelcomeMessageAsync(context);
+            }
+        }
 
+        private async Task CustomerDialogResumeAfter(IDialogContext context, IAwaitable<string> result) {
+            try
+            {
+                this.customerName = await result;
+                await context.PostAsync($"Your name is { this.certifierName } and the customer is { this.customerName}. I am searching for relevant documents");
+            }
+            catch (TooManyAttemptsException)
+            {
+                await context.PostAsync("OK, this is going nowhere. Let's try again.");
+            }
+            finally
+            {
+                await this.SendWelcomeMessageAsync(context);
+            }
         }
     }
 }

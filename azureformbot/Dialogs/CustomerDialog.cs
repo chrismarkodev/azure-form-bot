@@ -6,17 +6,22 @@ using Microsoft.Bot.Connector;
 namespace azureformbot.Dialogs
 {
     [Serializable]
-    public class NameDialog : IDialog<string>
+    public class CustomerDialog : IDialog<string> 
     {
+        private string certifierName;
         private int attempts = 3;
 
-        public async Task StartAsync(IDialogContext context)
-        {
-            await context.PostAsync("what is your name ?");
+        public CustomerDialog(string certifierName) {
+            this.certifierName = certifierName;
+        }
+
+        public async Task StartAsync(IDialogContext context) {
+            await context.PostAsync($"OK, {this.certifierName}, what is the customer name ?");
+
             context.Wait(this.MessageReceivedAsync);
         }
-        private async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> result)
-        {
+
+        private async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> result) {
             var message = await result;
 
             // check if message is valid, name is OK an dreturn to calling dialog
@@ -25,12 +30,14 @@ namespace azureformbot.Dialogs
                 // completes the dialog, removes it from the dialog stack and returns the result to the calling/parent dialog
                 context.Done(message.Text);
             }
+
+            else
             // prompt user again if message invalid
             {
                 --attempts;
                 if (attempts > 0)
                 {
-                    await context.PostAsync("I'm sorry, but I don't understand you reply. What is your name ?");
+                    await context.PostAsync("I'm sorry, but I don't understand you reply. What is the customer name ?");
                     context.Wait(this.MessageReceivedAsync);
                 }
                 else
